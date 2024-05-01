@@ -78,8 +78,20 @@ def start_sequence():
     # motor_system.move(1, 60, 1, 20)   # Move Y axis +50
     # motor_system.move(1, 30, -1, 20)  # Move Y axis -50
 
-    motor_system.move(1, 40, -1, 50)  # Move Y axis -50
-    motor_system.move(1, 40, 1, 50)  # Move Y axis -50
+    motor_system.move(1, 25, 1, 20)  # Move Y axis -50
+    motor_system.move(1, 25, -1, 20)  # Move Y axis -50
+    motor_system.move(1, 25, 1, 20)  # Move Y axis -50
+    motor_system.move(1, 25, -1, 20)  # Move Y axis -50
+    motor_system.move(1, 25, 1, 20)  # Move Y axis -50
+    motor_system.move(1, 25, -1, 20)  # Move Y axis -50
+
+    # motor_system.move(1, 30, 1, 50)  # Move Y axis -50
+    # motor_system.move(1, 30, -1, 50)  # Move Y axis -50
+    # motor_system.move(1, 30, 1, 50)  # Move Y axis -50
+    # motor_system.move(1, 30, -1, 50)  # Move Y axis -50
+    # motor_system.move(1, 30, 1, 50)  # Move Y axis -50
+    # motor_system.move(1, 30, -1, 50)  # Move Y axis -50
+
     # motor_system.move(1, 40, -1, 50)  # Move Y axis -50
     # motor_system.move(1, 40, 1, 50)  # Move Y axis -50
     # motor_system.move(1, 40, -1, 50)  # Move Y axis -50
