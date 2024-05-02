@@ -8,6 +8,7 @@ from led import ArduinoLED
 from event_sensor import EventSensor
 from cnc.cnc import MotorSystem
 import tornado.autoreload
+from npy2video import npy_to_video
 
 
 # Global variables to store event data
@@ -33,11 +34,17 @@ def start_sequence():
     def cnc_movement_sequence():
 
         # Perform CNC Y-axis movements sequentially within this thread
-        motor_system.move(1, 30, -1, 20)  # Move Y axis -30
-        motor_system.move(1, 60, 1, 20)   # Move Y axis +30
-        # motor_system.move(1, 30, -1, 20)
+        motor_system.move(1, 30, 1, motor_speed)  # Move Y axis -30
+        motor_system.move(1, 60, -1, motor_speed)   # Move Y axis +30
+        motor_system.move(1, 60, 1, motor_speed)  # Move Y axis -30
+        motor_system.move(1, 30, -1, motor_speed)   # Move Y axis +30
+
+
+        # motor_system.move(1, 30, -1, motor_speed)
         # Move to origin
         # motor_system.move_to_origin()
+
+    # return cnc_movement_sequence()
         
     # Format the current datetime for the directory name
     current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -58,7 +65,7 @@ def start_sequence():
     motor_system = MotorSystem(dll_path)
 
     # Start LED
-    motor_system.move(1, 10, 1, 20, record=False) 
+    motor_system.move(1, 15, 1, 20, record=False) 
     time.sleep(5)
     led_control.led_on()
     time.sleep(5)
@@ -68,34 +75,57 @@ def start_sequence():
 
 
     # Pass the get_current_status method as a parameter
-    threading.Thread(target=lambda: sensor.record_events_with_auxiliary_data(
-        "event_data", 
-        motor_system.get_current_status, 
-        recording_duration_sec=300)).start()
+    # threading.Thread(target=lambda: sensor.record_events_with_auxiliary_data(
+    #     "event_data", 
+    #     motor_system.get_current_status, 
+    #     recording_duration_sec=300)).start()
+    # sensor.record_events_and_frames_concurrently('events_output', 'frames_output', 10)  # Record both events and frames for 10 seconds
+    # Assuming 'motor_system.get_current_status' is a method you would like to pass, but since we have not defined it,
+    # I'm using 'record_events_and_frames_concurrently' directly. 
+    # If 'get_current_status' or other parameters need to be passed, you can adjust the lambda function accordingly.
+    
+    threading.Thread(target=lambda: sensor.record_events_and_frames_concurrently(
+        'events_output', 
+        'frames_output', 
+        recording_duration_sec=300
+    )).start()
+
+    motor_speed = 100
+
+    # cnc_movement_sequence()
 
     # Move CNC Y-axis
-    # motor_system.move(1, 30, -1, 20)  # Move Y axis -50
-    # motor_system.move(1, 60, 1, 20)   # Move Y axis +50
-    # motor_system.move(1, 30, -1, 20)  # Move Y axis -50
+    # motor_system.move(1, 30, -1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 60, 1, motor_speed)   # Move Y axis +50
+    # motor_system.move(1, 30, -1, motor_speed)  # Move Y axis -50
 
-    motor_system.move(1, 25, 1, 20)  # Move Y axis -50
-    motor_system.move(1, 25, -1, 20)  # Move Y axis -50
-    motor_system.move(1, 25, 1, 20)  # Move Y axis -50
-    motor_system.move(1, 25, -1, 20)  # Move Y axis -50
-    motor_system.move(1, 25, 1, 20)  # Move Y axis -50
-    motor_system.move(1, 25, -1, 20)  # Move Y axis -50
+    # motor_system.move(1, 25, 1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, -1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, 1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, -1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, 1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, -1, motor_speed)  # Move Y axis -50
 
-    # motor_system.move(1, 30, 1, 50)  # Move Y axis -50
-    # motor_system.move(1, 30, -1, 50)  # Move Y axis -50
-    # motor_system.move(1, 30, 1, 50)  # Move Y axis -50
-    # motor_system.move(1, 30, -1, 50)  # Move Y axis -50
-    # motor_system.move(1, 30, 1, 50)  # Move Y axis -50
-    # motor_system.move(1, 30, -1, 50)  # Move Y axis -50
+    motor_system.move(1, 30, 1, motor_speed)  # Move Y axis -50
+    motor_system.move(1, 30, -1, motor_speed)  # Move Y axis -50
+    motor_system.move(1, 30, 1, motor_speed)  # Move Y axis -50
+    motor_system.move(1, 30, -1, motor_speed)  # Move Y axis -50
+    motor_system.move(1, 30, 1, motor_speed)  # Move Y axis -50
+    motor_system.move(1, 30, -1, motor_speed)  # Move Y axis -50
 
-    # motor_system.move(1, 40, -1, 50)  # Move Y axis -50
-    # motor_system.move(1, 40, 1, 50)  # Move Y axis -50
-    # motor_system.move(1, 40, -1, 50)  # Move Y axis -50
-    # motor_system.move(1, 40, 1, 50)  # Move Y axis -50
+    # motor_system.move(1, 25, 1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, -1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, 1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, -1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, 1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 25, -1, motor_speed)  # Move Y axis -50
+
+    # time.sleep(60)
+
+    # motor_system.move(1, 40, -1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 40, 1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 40, -1, motor_speed)  # Move Y axis -50
+    # motor_system.move(1, 40, 1, motor_speed)  # Move Y axis -50
     # motor_system.move(1, 50, -1, 100)  # Move Y axis -50
     # motor_system.move(1, 40, 1, 100)  # Move Y axis -50
     # motor_system.move(1, 60, 1, 100)   # Move Y axis +50
@@ -127,7 +157,7 @@ def start_sequence():
 
     time.sleep(5)
 
-    motor_system.move(1, 10, -1, 20, record=False) 
+    motor_system.move(1, 15, -1, 20, record=False) 
    
 
     # Print positions, events, and save to CSV
@@ -136,6 +166,10 @@ def start_sequence():
     # Cleanup
     led_control.close()
     motor_system.close_device()
+
+    npy_file_path = r'data/frames_output.npy'
+    output_video_path = r'data/frames_output.mp4'
+    npy_to_video(npy_file_path, output_video_path)
 
 def save_events_to_csv():
     # Placeholder for the function to save event data to CSV

@@ -7,6 +7,7 @@ from dv import NetworkEventInput, NetworkFrameInput, AedatFile, LegacyAedatFile,
 from datetime import datetime, timedelta
 import pytz
 import csv
+import threading
 
 def timestamp_to_formatted_string_with_timezone(timestamp_microseconds, timezone='Asia/Hong_Kong'):
     # Assuming the timestamp is based on the UNIX epoch (January 1, 1970)
@@ -43,22 +44,13 @@ def timestamp_to_formatted_string(timestamp_microseconds):
     
     return formatted_string
 
-# # Example usage
-# event_timestamp_microseconds = 1712655832931546  # Example event timestamp in microseconds
-# system_timestamp_microseconds = int(time.time() * 1e6)  # Current system time in microseconds
-
-# event_timestamp_formatted = timestamp_to_formatted_string(event_timestamp_microseconds)
-# system_timestamp_formatted = timestamp_to_formatted_string(system_timestamp_microseconds)
-
-# print(f"Event Timestamp Formatted: {event_timestamp_formatted}")
-# print(f"System Timestamp Formatted: {system_timestamp_formatted}")
-
 
 
 class EventSensor:
     def __init__(self):
         self.address = '127.0.0.1'
         self.port = int(os.getenv('DV_PORT', '7777'))
+        self.port_f = int(os.getenv('DV_PORT_FRAME', '7778'))
         self.recording_enabled = False  # Initially, recording is not active
 
     def start_recording(self):
@@ -96,56 +88,6 @@ class EventSensor:
 
         print(f"Events recorded to {output_file_path}")
 
-    # def record_events_with_auxiliary_data(self, output_file_name, get_current_status, recording_duration_sec=None):
-    #     # Ensure the 'data' directory exists
-    #     data_directory = 'data'
-    #     if not os.path.exists(data_directory):
-    #         os.makedirs(data_directory, exist_ok=True)
-
-    #     # Path to save the output file
-    #     output_file_path = os.path.join(data_directory, f"{output_file_name}.csv")
-
-    #     # Open the output file for writing
-    #     with open(output_file_path, 'w') as file:
-    #         # Write the CSV header, now including headers for auxiliary data
-    #         file.write("timestamp,x,y,polarity,x_position,y_position,z_position\n")
-
-    #         with NetworkEventInput(address=self.address, port=self.port) as event_input:
-    #             start_time = time.time()
-    #             for event in event_input:
-    #                 if not self.recording_enabled:
-    #                     break  # Stop recording if the flag is set to False
-
-
-    #                 # current_status = {'x_position': 0.0, 'y_position': 0.0, 'z_position': 0.0}
-
-    #                 # try:
-    #                 #     # Get the current machine status
-    #                 #     is_axis_stop, current_status = get_current_status()
-    #                 #     print("is_axis_stop: ", is_axis_stop)
-    #                 #     if is_axis_stop[1] == 1:
-    #                 #          continue
-    #                 # except:
-    #                 #     continue
-
-    #                 # Capture the current system time in microseconds
-    #                 system_timestamp_microseconds = int(time.time() * 1e6)
-
-    #                 # Capture the current system time and format it as hh:mm:ss, microseconds
-    #                 # system_timestamp_formatted = datetime.now().strftime("%H:%M:%S,%f")
-    #                 system_timestamp_formatted = timestamp_to_formatted_string_with_timezone(system_timestamp_microseconds)
-    #                 event_timestamp_formatted = timestamp_to_formatted_string_with_timezone(event.timestamp)
-
-
-    #                 # Write each event's details to the file in CSV format, now including auxiliary data
-    #                 # file.write(f"{event.timestamp},{event.x},{event.y},{event.polarity},{current_status['x_position']},{current_status['y_position']},{current_status['z_position']}\n")
-    #                 file.write(f"{event_timestamp_formatted},{system_timestamp_formatted},{event.x},{event.y},{event.polarity}\n")
-                    
-    #                 # Check if the recording duration has been reached, if specified
-    #                 if recording_duration_sec is not None and time.time() - start_time > recording_duration_sec:
-    #                     break
-
-    #     print(f"Events recorded to {output_file_path}")
 
     def record_events_with_auxiliary_data(self, output_file_name, get_current_status, recording_duration_sec=None, timezone='Asia/Hong_Kong'):
         # Ensure the 'data' directory exists
@@ -183,6 +125,92 @@ class EventSensor:
             writer.writerows(events_data)
 
         print(f"Events recorded to {output_file_path}")
+
+    # def record_events_with_auxiliary_data(self, output_file_name, recording_duration_sec=None, timezone='Asia/Hong_Kong'):
+    #     data_directory = 'data'
+    #     if not os.path.exists(data_directory):
+    #         os.makedirs(data_directory, exist_ok=True)
+    #     events_data = []
+    #     output_file_path = os.path.join(data_directory, f"{output_file_name}.csv")
+    #     with NetworkEventInput(address=self.address, port=self.port) as event_input:
+    #         start_time = time.time()
+    #         for event in event_input:
+    #             if not self.recording_enabled:
+    #                 break
+    #             system_timestamp_microseconds = int(time.time() * 1e6)
+    #             system_timestamp_formatted = timestamp_to_formatted_string_with_timezone(system_timestamp_microseconds, timezone)
+    #             event_timestamp_formatted = timestamp_to_formatted_string_with_timezone(event.timestamp, timezone)
+    #             events_data.append([event_timestamp_formatted, system_timestamp_formatted, event.x, event.y, event.polarity])
+    #             if recording_duration_sec is not None and time.time() - start_time > recording_duration_sec:
+    #                 break
+    #     with open(output_file_path, 'w', newline='') as file:
+    #         writer = csv.writer(file)
+    #         writer.writerow(["event_timestamp", "system_timestamp", "x", "y", "polarity"])
+    #         writer.writerows(events_data)
+
+    # def record_frames_to_numpy(self, output_file_name, recording_duration_sec=None):
+    #     data_directory = 'data'
+    #     if not os.path.exists(data_directory):
+    #         os.makedirs(data_directory, exist_ok=True)
+    #     frames_data = []
+    #     with NetworkFrameInput(address=self.address, port=self.port_f) as frame_input:
+    #         start_time = time.time()
+    #         for frame in frame_input:
+    #             if not self.recording_enabled:
+    #                 break
+    #             frames_data.append(frame.image)
+    #             if recording_duration_sec is not None and time.time() - start_time > recording_duration_sec:
+    #                 break
+    #     np.save(os.path.join(data_directory, f"{output_file_name}.npy"), frames_data)
+
+    def record_frames_with_auxiliary_data(self, output_file_name, recording_duration_sec=None, timezone='Asia/Hong_Kong'):
+        data_directory = 'data'
+        if not os.path.exists(data_directory):
+            os.makedirs(data_directory, exist_ok=True)
+        
+        frames_data = []
+        timestamps_data = []
+
+        with NetworkFrameInput(address=self.address, port=self.port_f) as frame_input:
+            start_time = time.time()
+            for frame in frame_input:
+                if not self.recording_enabled:
+                    break
+
+                # Capture the current system time in microseconds and convert to formatted string
+                system_timestamp_microseconds = int(time.time() * 1e6)
+                system_timestamp_formatted = timestamp_to_formatted_string_with_timezone(system_timestamp_microseconds, timezone)
+                frame_timestamp_formatted = timestamp_to_formatted_string_with_timezone(frame.timestamp, timezone)
+
+                # Store frame as an array (flattened if necessary) and timestamp data
+                # frame_array = frame.image.flatten()  # Flatten the frame image array if necessary
+                # frames_data.append(frame_array)
+                frames_data.append(frame.image)
+                timestamps_data.append([frame_timestamp_formatted, system_timestamp_formatted])
+
+                if recording_duration_sec is not None and time.time() - start_time > recording_duration_sec:
+                    break
+        
+        # Save frame data as a numpy array file
+        np.save(os.path.join(data_directory, f"{output_file_name}.npy"), frames_data)
+        
+        # Save timestamps data as a CSV file
+        timestamps_file_path = os.path.join(data_directory, f"{output_file_name}_timestamps.csv")
+        with open(timestamps_file_path, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["frame_timestamp", "system_timestamp"])
+            writer.writerows(timestamps_data)
+
+        print(f"Frames and timestamps recorded to {data_directory}")
+
+    def record_events_and_frames_concurrently(self, event_file_name, frame_file_name, recording_duration_sec=None):
+        event_thread = threading.Thread(target=self.record_events_with_auxiliary_data, args=(event_file_name, recording_duration_sec))
+        # frame_thread = threading.Thread(target=self.record_frames_to_numpy, args=(frame_file_name, recording_duration_sec))
+        frame_thread = threading.Thread(target=self.record_frames_with_auxiliary_data, args=(frame_file_name, recording_duration_sec))
+        event_thread.start()
+        frame_thread.start()
+        event_thread.join()
+        frame_thread.join()
 
 
 
